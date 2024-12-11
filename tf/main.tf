@@ -20,8 +20,27 @@ provider "aws" {
   region = local.region
 }
 
+module "network" {
+    source        = "./modules/network"
+
+    instance_type         = local.instance_type
+    bastion_key_private   = local.bastion_key_private
+    bastion_key_public    = local.bastion_key_public
+}
 
 module "nginx" {
-    source = "./modules/network"
-
+    source        = "./modules/nginx"
+    
+    instance_type           = local.instance_type
+    alias_record            = local.alias_record
+    cert_arn                = local.cert_arn
+    private_subnets         = module.network.private_subnets
+    public_subnets          = module.network.public_subnets
+    vpc_id                  = module.network.vpc_id
+    bastion_private_ip      = module.network.bastion_private_ip
+    bastion_public_ip       = module.network.bastion_public_ip
+    bastion_key_private     = local.bastion_key_private
+    nginx_key_private       = local.nginx_key_private
+    nginx_key_public        = local.nginx_key_public
+    
 }

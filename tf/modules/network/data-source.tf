@@ -12,7 +12,3 @@ data "aws_ami" "ubuntu_ami" {
   }
 }
 
-data "aws_route53_zone" "hosted_zone" {
-  name = "magvonim.site"
-}
-

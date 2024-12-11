@@ -1,5 +1,5 @@
 ######################################################################
-###                     VPC Creation
+###                            VPC Creation
 ######################################################################
 resource "aws_vpc" "nginx_vpc" {
   cidr_block           = "10.0.0.0/16"
@@ -10,7 +10,7 @@ resource "aws_vpc" "nginx_vpc" {
   }
 }
 ######################################################################
-###                     Internet Gateway Creation
+###                          Internet Gateway
 ######################################################################
 resource "aws_internet_gateway" "nginx_igw" {
   vpc_id = aws_vpc.nginx_vpc.id
@@ -20,38 +20,58 @@ resource "aws_internet_gateway" "nginx_igw" {
 }
 
 ######################################################################
-###                    Subnets Creation
+###                     Private and Public Subnets
 ######################################################################
-resource "aws_subnet" "nginx_public_subnet" {
+
+resource "aws_subnet" "nginx_public_subnet-1" {
   vpc_id                  = aws_vpc.nginx_vpc.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-availability_zone = data.aws_availability_zones.available_azs.names[0]
+  availability_zone = data.aws_availability_zones.available_azs.names[0]
   tags = {
     Name = "nginx-public-subnet"
   }
 }
-resource "aws_subnet" "nginx_private_subnet" {
-  vpc_id            = aws_vpc.nginx_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = data.aws_availability_zones.available_azs.names[0]
+
+resource "aws_subnet" "nginx_public_subnet-2" {
+  vpc_id                  = aws_vpc.nginx_vpc.id
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone = data.aws_availability_zones.available_azs.names[1]
   tags = {
-    Name = "nginx-private-subnet"
+    Name = "nginx-public-subnet"
   }
 }
+
+resource "aws_subnet" "nginx_private_subnet-1" {
+  vpc_id            = aws_vpc.nginx_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = data.aws_availability_zones.available_azs.names[0]
+  tags = {
+    Name = "nginx-private-subnet-1"
+  }
+}
+resource "aws_subnet" "nginx_private_subnet-2" {
+  vpc_id            = aws_vpc.nginx_vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = data.aws_availability_zones.available_azs.names[1]
+  tags = {
+    Name = "nginx-private-subnet-2"
+  }
+}
+
 ######################################################################
-###                    Nat Gateway Creation
+###                    Nat Gateway and Elastic IP
 ######################################################################
 resource "aws_nat_gateway" "nginx_nat" {
   allocation_id = aws_eip.nginx_nat.id
-  subnet_id     = aws_subnet.nginx_public_subnet.id
+  subnet_id     = aws_subnet.nginx_public_subnet-1.id
   tags = {
     Name = "nginx-nat-gateway"
   }
 }
 
 resource "aws_eip" "nginx_nat" {
-  vpc = true
   tags = {
     Name = "nginx-nat-eip"
   }
@@ -60,6 +80,7 @@ resource "aws_eip" "nginx_nat" {
 ######################################################################
 ###                  Private and Public Route Tables
 ######################################################################
+
 resource "aws_route_table" "nginx_public_route_table" {
   vpc_id = aws_vpc.nginx_vpc.id
   tags = {
@@ -73,10 +94,16 @@ resource "aws_route" "nginx_public_route" {
   gateway_id             = aws_internet_gateway.nginx_igw.id
 }
 
-resource "aws_route_table_association" "nginx_public" {
-  subnet_id      = aws_subnet.nginx_public_subnet.id
+resource "aws_route_table_association" "nginx_public-1" {
+  subnet_id      = aws_subnet.nginx_public_subnet-1.id
   route_table_id = aws_route_table.nginx_public_route_table.id
 }
+
+resource "aws_route_table_association" "nginx_public-2" {
+  subnet_id      = aws_subnet.nginx_public_subnet-2.id
+  route_table_id = aws_route_table.nginx_public_route_table.id
+}
+
 resource "aws_route_table" "nginx_private_route_table" {
   vpc_id = aws_vpc.nginx_vpc.id
   tags = {
@@ -90,8 +117,13 @@ resource "aws_route" "nginx_private_route" {
   nat_gateway_id         = aws_nat_gateway.nginx_nat.id
 }
 
-resource "aws_route_table_association" "nginx_private" {
-  subnet_id      = aws_subnet.nginx_private_subnet.id
+resource "aws_route_table_association" "nginx_private-1" {
+  subnet_id      = aws_subnet.nginx_private_subnet-1.id
+  route_table_id = aws_route_table.nginx_private_route_table.id
+}
+
+resource "aws_route_table_association" "nginx_private-2" {
+  subnet_id      = aws_subnet.nginx_private_subnet-2.id
   route_table_id = aws_route_table.nginx_private_route_table.id
 }
 
@@ -100,17 +132,39 @@ resource "aws_route_table_association" "nginx_private" {
 ######################################################################
 
 resource "aws_instance" "nginx_bastion" {
-  ami           = data.aws_ami.ubuntu_ami.id
-  instance_type = var.instance_type
-  subnet_id     = aws_subnet.nginx_public_subnet.id
-  security_groups = [
-    aws_security_group.nginx_bastion_sg.name
-  ]
+  ami                      = data.aws_ami.ubuntu_ami.id
+  instance_type            = var.instance_type
+  key_name                 = aws_key_pair.bastion_key.key_name
+  subnet_id                = aws_subnet.nginx_public_subnet-1.id
+  vpc_security_group_ids   = [aws_security_group.nginx_bastion_sg.id]
   tags = {
     Name = "nginx-bastion-host"
   }
 }
 
-resource "aws_key_pair" "nginx_bastion_key" {
-  key_name   = "nginx-bastion-key"
+resource "aws_key_pair" "bastion_key" {
+  key_name   = "bastion-key"
+  public_key = file(var.bastion_key_public) # Path to your public key
+}
+
+resource "aws_security_group" "nginx_bastion_sg" {
+  name        = "bastion-sg"  
+  description = "Allow SSH and HTTP traffic"
+  vpc_id      = aws_vpc.nginx_vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] 
+  }  
+  
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+
 }
