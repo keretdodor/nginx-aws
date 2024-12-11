@@ -32,12 +32,9 @@ jobs:
           mask-aws-account-id: 'no'
 
       - name: Update locals.tf
-        env:
-          BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
-          NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
         run: |
-          sed -i '/^}/i\  bastion_key_private = "'"$BASTION_PRIVATE_KEY"'"' locals.tf
-          sed -i '/^}/i\  nginx_key_private = "'"$NGINX_PRIVATE_KEY"'"' locals.tf
+          sed -i '/^}/i\  bastion_key_private = "'"${{ secrets.BASTION_PRIVATE_KEY }}"'"' locals.tf
+          sed -i '/^}/i\  nginx_key_private = "'"${{ secrets.NGINX_PRIVATE_KEY }}"'"' locals.tf
         shell: bash
         working-directory: ./tf
 
