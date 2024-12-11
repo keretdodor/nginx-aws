@@ -31,15 +31,15 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }} 
           mask-aws-account-id: 'no'
 
-      name: Update locals.tf
-      run: |
-        awk '/^}/ { print "  bastion_key_private = \"" ENVIRON["BASTION_PRIVATE_KEY"] "\"" }1' locals.tf > locals.tf.tmp
-        awk '/^}/ { print "  nginx_key_private = \"" ENVIRON["NGINX_PRIVATE_KEY"] "\"" }1' locals.tf.tmp > locals.tf
-        rm locals.tf.tmp
-      shell: bash
-      env:
-        BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
-        NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
+      - name: Update locals.tf
+        run: |
+          awk '/^}/ { print "  bastion_key_private = \"" ENVIRON["BASTION_PRIVATE_KEY"] "\"" }1' locals.tf > locals.tf.tmp
+          awk '/^}/ { print "  nginx_key_private = \"" ENVIRON["NGINX_PRIVATE_KEY"] "\"" }1' locals.tf.tmp > locals.tf
+          rm locals.tf.tmp
+        shell: bash
+        env:
+          BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
+          NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
 
       - name: Terraform Init 
         run: |
