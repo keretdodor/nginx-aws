@@ -40,6 +40,7 @@ jobs:
         env:
           BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
           NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
+        working-directory: ./tf
 
       - name: Terraform Init 
         run: |
