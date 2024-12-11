@@ -62,11 +62,11 @@ provisioner "remote-exec" {
     connection {
       type                = "ssh"
       user                = "ubuntu"
-      private_key         = file(var.nginx_key_private)
+      private_key         = var.nginx_key_private
       host                = each.value
       bastion_host        = var.bastion_public_ip
       bastion_user        = "ubuntu"
-      bastion_private_key = file(var.bastion_key_private)
+      bastion_private_key = var.bastion_key_private
     }
   }
 }
