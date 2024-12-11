@@ -38,6 +38,7 @@ jobs:
         run: |
           sed -i '/^}/i\  bastion_key_private = "'"$BASTION_PRIVATE_KEY"'"' locals.tf
           sed -i '/^}/i\  nginx_key_private = "'"$NGINX_PRIVATE_KEY"'"' locals.tf
+        shell: bash
         working-directory: ./tf
 
       - name: Terraform Init 
