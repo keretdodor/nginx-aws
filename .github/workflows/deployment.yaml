@@ -8,13 +8,10 @@ on:
     branches:
       - main
 
-
 jobs:
   terraform:
     name: Terraform Infrastructure
     runs-on: ubuntu-latest
-    defaults:
-      run:
 
     steps:
       - name: Checkout code
@@ -39,11 +36,11 @@ jobs:
           BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
           NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
         run: |
-          cp /tf/locals.tf /tf/locals.tf.bak
-          sed -i '/^}/i\  bastion_key_private = "'"$BASTION_PRIVATE_KEY"'"' local.tf
-          sed -i '/^}/i\  nginx_key_private = "'"$NGINX_PRIVATE_KEY"'"' local.tf
+          cp ./tf/locals.tf ./tf/locals.tf.bak
+          sed -i '/^}/i\  bastion_key_private = "'"$BASTION_PRIVATE_KEY"'"' ./tf/locals.tf
+          sed -i '/^}/i\  nginx_key_private = "'"$NGINX_PRIVATE_KEY"'"' ./tf/locals.tf
         working-directory: ./tf
-      
+
       - name: Terraform Init 
         run: |
           terraform init
