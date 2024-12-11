@@ -33,17 +33,11 @@ jobs:
 
       - name: Prepare Secrets
         run: |
-          echo "$BASTION_PRIVATE_KEY" | tr -d '\n' > bastion_key.txt
-          echo "$NGINX_PRIVATE_KEY" | tr -d '\n' > nginx_key.txt
-        env:
-          BASTION_PRIVATE_KEY: ${{ secrets.BASTION_PRIVATE_KEY }}
-          NGINX_PRIVATE_KEY: ${{ secrets.NGINX_PRIVATE_KEY }}
-      
-      - name: Update locals.tf
-        run: |
-          sed -i '/^}/i\  bastion_key_private = "'$(cat bastion_key.txt)'"' locals.tf
-          sed -i '/^}/i\  nginx_key_private = "'$(cat nginx_key.txt)'"' locals.tf
-        working-directory: ./tf
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > bastion-key-moveo.pem
+          echo "${{ secrets.NGINX_PRIVATE_KEY }}"  > nginx-key-moveo.pem
+          chmod 600 nginx-key-moveo.pem
+          chmod 600 bastion-key-moveo.pem
+
 
       - name: Terraform Init 
         run: |
