@@ -120,7 +120,7 @@ resource "aws_network_acl" "nginx_private_nacl" {
     protocol   = "tcp"
     rule_no    = 100
     action     = "allow"
-    cidr_block = "${var.bastion_private_ip}/32"
+    cidr_block = "${aws_instance.nginx_bastion.private_ip}/32"
     from_port  = 22
     to_port    = 22
   }

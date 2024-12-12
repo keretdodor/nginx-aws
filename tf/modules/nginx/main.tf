@@ -11,14 +11,8 @@ resource "aws_instance" "nginx" {
   tags = {
     Name = "nginx-bastion-host"
   }
-}
 
-resource "aws_key_pair" "nginx_key" {
-  key_name   = "nginx-key"
-  public_key = file(var.nginx_key_public) # Path to your public key
-
-
-provisioner "remote-exec" {
+   provisioner "remote-exec" {
     inline = [
       "sudo apt update -y",
       "sudo apt install -y docker.io",
@@ -29,17 +23,23 @@ provisioner "remote-exec" {
       "sudo docker pull keretdodor/nginx-moveo",
       "sudo docker run -d -p 80:80 keretdodor/nginx-moveo"
     ]
-    for_each = {for idx, inst in aws_instance.nginx : idx => inst.private_ip}
+
     connection {
       type                = "ssh"
       user                = "ubuntu"
       private_key         = file(var.nginx_key_private)
-      host                = each.value
+      host                = self.private_ip
       bastion_host        = var.bastion_public_ip
       bastion_user        = "ubuntu"
       bastion_private_key = file(var.bastion_key_private)
     }
   }
+}
+
+resource "aws_key_pair" "nginx_key" {
+  key_name   = "nginx-key"
+  public_key = file(var.nginx_key_public) # Path to your public key
+  
 }
 
 resource "aws_security_group" "nginx_sg" {
@@ -69,7 +69,6 @@ resource "aws_security_group" "nginx_sg" {
   }
 }
 resource "null_resource" "docker" {
-  
 for_each = {for idx, inst in aws_instance.nginx : idx => inst.private_ip}
 
 provisioner "remote-exec" {
