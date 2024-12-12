@@ -39,6 +39,7 @@ jobs:
           chmod 600 bastion-key-moveo.pem
           mv bastion-key-moveo.pem ./tf/
           mv nginx-key-moveo.pem ./tf/
+          echo "HELLO"
 
 
       - name: Terraform Init 
