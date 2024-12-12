@@ -50,7 +50,7 @@ for_each = {for idx, inst in aws_instance.nginx : idx => inst.private_ip}
 
 provisioner "remote-exec" {
     inline = [
-      "sudo apt-get update",
+      "sudo apt update",
       "sudo snap install docker",
       "sleep 7",
       "sudo systemctl start snap.docker.dockerd.service",  
