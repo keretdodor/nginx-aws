@@ -21,7 +21,7 @@ To ensure security and best practices, i stored the `tfstate` file in an **S3 bu
 
 **Virtual Private Cloud (VPC):** A dedicated, logically isolated network for the application, with CIDR block `10.0.0.0/16`.
 
-**Subnets and High Availability:**
+<u><b>Subnets and High Availability:</b></u>
 
 ***Two Public Subnets:***
 
@@ -35,13 +35,13 @@ These subnets host resources that need to be exposed to the internet, such as th
 These subnets are also spread across two AZs for high availability.
 They host NGINX instances and restrict their direct exposure to the internet, adding a layer of security.
 
-**Internet Gateway and NAT Gateway:**
+<u><b>Internet Gateway and NAT Gateway:</b></u>
 
 The **Internet Gateway** allows public subnets to communicate with the internet.
 
 The **NAT Gateway** enables private subnets to initiate outbound internet traffic without exposing them to inbound traffic. An **Elastic IP** is attached to the NAT Gateway ensuring future whitelisting and consistency.
 
-**Route Tables:**
+<u><b>Route Tables:</b></u>
 
 I created two route table to create a complete netwrok isolation one for the public subnets and the other for the private ones.
 
@@ -49,13 +49,13 @@ I created two route table to create a complete netwrok isolation one for the pub
 
 **Private subnets** route through the **NAT Gateway** for secure and one sided internet access.
 
-**NACLs**
+ <u><b>NACLs:</b></u>
 
 The Network Access Control Lists (NACLs) provide an additional layer of security for both public and private subnets in our VPC infrastructure. The public subnet NACL allows inbound SSH and HTTPS traffic from any source, while enabling all outbound communication. The private subnet NACL restricts inbound access to SSH from the bastion host and HTTP from within the VPC, ensuring controlled and secure network access. These stateless firewall rules complement the existing security groups, offering granular network-level protection for our AWS-deployed application.
 
 ![alt text](images/vpc-flow.png)
 
-**Bastion Host for Administrative Access**
+<u><b>Bastion Host for Administrative Access:</b></u>
 
 A bastion host is deployed in a public subnet. With the bastion host we can securely connect to any instance on a private subnet within the same VPC.
 The bastion host has a dedicated key pair crteated locally and uploaded to aws with the `aws_key_pair` resource.
@@ -66,7 +66,7 @@ The bastion host has a dedicated key pair crteated locally and uploaded to aws w
 
 This module includes both the **Ngnix Instances** and the **Application Load Balancer**.
 
-**Ngnix Instances:**
+<u><b>Ngnix Instances:</b></u>
 
 I created two Nginx instances deployed on two different private subnet within two different AZs. The Nginx instances have adedicated key pair crteated locally and uploaded to aws with the `aws_key_pair` resource. 
 
@@ -74,7 +74,9 @@ To ensure maximum security, i created a security group that is based on the **le
 
 Outbound traffic is possible due to the existence of the **NAT Gateway**.
 
-**Load Balancer:**
+
+<u><b>Load Balancer:</b></u>
+
 
 The Load Balancer type is application, it is a LB that functions in Layer 7 of the OSI model and acccepts HTTP and HTTPS protocols.
 
