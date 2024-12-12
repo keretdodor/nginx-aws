@@ -59,7 +59,108 @@ resource "aws_subnet" "nginx_private_subnet-2" {
     Name = "nginx-private-subnet-2"
   }
 }
+######################################################################
+###                             NACLs
+######################################################################
 
+
+resource "aws_network_acl" "nginx_public_nacl" {
+  vpc_id = aws_vpc.nginx_vpc.id
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443
+    to_port    = 443
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 300
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  egress {
+    protocol   = "-1"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  subnet_ids = [
+    aws_subnet.nginx_public_subnet-1.id,
+    aws_subnet.nginx_public_subnet-2.id
+  ]
+
+  tags = {
+    Name = "nginx-public-nacl"
+  }
+}
+
+resource "aws_network_acl" "nginx_private_nacl" {
+  vpc_id = aws_vpc.nginx_vpc.id
+  
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "${var.bastion_private_ip}/32"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "10.0.0.0/16"  # VPC CIDR
+    from_port  = 80
+    to_port    = 80
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 300
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 1024
+    to_port    = 65535
+  }
+
+  egress {
+    protocol   = "-1"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  subnet_ids = [
+    aws_subnet.nginx_private_subnet-1.id,
+    aws_subnet.nginx_private_subnet-2.id
+  ]
+
+  tags = {
+    Name = "nginx-private-nacl"
+  }
+}
 ######################################################################
 ###                    Nat Gateway and Elastic IP
 ######################################################################
