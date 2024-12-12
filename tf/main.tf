@@ -39,6 +39,7 @@ module "nginx" {
     vpc_id                  = module.network.vpc_id
     bastion_private_ip      = module.network.bastion_private_ip
     bastion_public_ip       = module.network.bastion_public_ip
+    nat_gateway_id          = module.network.nat_gateway_id
     bastion_key_private     = local.bastion_key_private
     nginx_key_private       = local.nginx_key_private
     nginx_key_public        = local.nginx_key_public

@@ -22,3 +22,7 @@ output "bastion_public_ip" {
   value = aws_instance.nginx_bastion.public_ip
   description = "The private IP address of the bastion host"
 }
+
+output "nat_gateway_id" {
+  value = aws_nat_gateway.nginx_nat.id
+}

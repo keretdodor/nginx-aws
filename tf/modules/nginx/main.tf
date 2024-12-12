@@ -9,7 +9,7 @@ resource "aws_instance" "nginx" {
   subnet_id                = var.private_subnets[count.index % length(var.private_subnets)]
   vpc_security_group_ids   = [aws_security_group.nginx_sg.id]
   tags = {
-    Name = "nginx-bastion-host"
+    Name = "nginx"
   }
 
    provisioner "remote-exec" {
@@ -34,6 +34,7 @@ resource "aws_instance" "nginx" {
       bastion_private_key = file(var.bastion_key_private)
     }
   }
+  depends_on = [var.nat_gateway_id]
 }
 
 resource "aws_key_pair" "nginx_key" {
@@ -93,6 +94,7 @@ provisioner "remote-exec" {
       bastion_private_key = file(var.bastion_key_private)
     }
   }
+  depends_on = [var.nat_gateway_id]
 }
 
 ######################################################################

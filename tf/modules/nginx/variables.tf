@@ -52,3 +52,8 @@ variable "bastion_key_private" {
   type        = string
   description = "The full alias record"
 }
+
+variable " nat_gateway_id " {
+  type        = string
+  description = "The full alias record"
+}
