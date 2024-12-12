@@ -11,30 +11,6 @@ resource "aws_instance" "nginx" {
   tags = {
     Name = "nginx"
   }
-
-   provisioner "remote-exec" {
-    inline = [
-      "sudo apt update -y",
-      "sudo apt install -y docker.io",
-      "sleep 7",
-      "sudo systemctl start docker",
-      "sudo systemctl enable docker",
-      "sleep 7",
-      "sudo docker pull keretdodor/nginx-moveo",
-      "sudo docker run -d -p 80:80 keretdodor/nginx-moveo"
-    ]
-
-    connection {
-      type                = "ssh"
-      user                = "ubuntu"
-      private_key         = file(var.nginx_key_private)
-      host                = self.private_ip
-      bastion_host        = var.bastion_public_ip
-      bastion_user        = "ubuntu"
-      bastion_private_key = file(var.bastion_key_private)
-    }
-  }
-  depends_on = [var.nat_gateway_id]
 }
 
 resource "aws_key_pair" "nginx_key" {
