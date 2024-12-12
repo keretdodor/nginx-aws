@@ -50,11 +50,11 @@ for_each = {for idx, inst in aws_instance.nginx : idx => inst.private_ip}
 
 provisioner "remote-exec" {
     inline = [
-      "sudo apt update -y",
-      "sudo apt install -y docker.io",
+      "sudo apt-get update",
+      "sudo snap install docker",
       "sleep 7",
-      "sudo systemctl start docker",
-      "sudo systemctl enable docker",
+      "sudo systemctl start snap.docker.dockerd.service",  
+      "sudo systemctl enable snap.docker.dockerd.service", 
       "sleep 7",
       "sudo docker pull keretdodor/nginx-moveo",
       "sudo docker run -d -p 80:80 keretdodor/nginx-moveo"
